@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-from config import LOG_DIR, LOG_FILE
+from config import LOG_DIR
 
 # Configure the logging module
 
@@ -44,7 +44,11 @@ class CustomLogger(logging.Logger):
         
         # Create handlers
         console_handler = logging.StreamHandler()
-        file_handler = logging.FileHandler(LOG_FILE, mode="a", encoding="utf-8")
+        
+        # Create a separate log file for each logger instance
+        log_filename = f"{name}.log"
+        log_filepath = os.path.join(LOG_DIR, log_filename)
+        file_handler = logging.FileHandler(log_filepath, mode="a", encoding="utf-8")
         
         # Create formatter and add it to the handlers
         colored_formatter = ColoredFormatter("{asctime} : {name} : {levelname} : {message}",
@@ -61,14 +65,30 @@ class CustomLogger(logging.Logger):
         self.addHandler(file_handler)
         
 def main():
-    """Main function to demonstrate logging"""
-    time_logging = CustomLogger("example_logger", level=logging.DEBUG)
+    """Main function to demonstrate logging with multiple loggers"""
+    # Create different loggers for different modules
+    app_logger = CustomLogger("app_main", level=logging.DEBUG)
+    auth_logger = CustomLogger("auth_module", level=logging.INFO)
+    db_logger = CustomLogger("database", level=logging.DEBUG)
     
-    time_logging.debug("This is a debug message.")
-    time_logging.info("This is an info message.")
-    time_logging.warning("This is a warning message.")
-    time_logging.error("This is an error message.")
-    time_logging.critical("This is a critical message.")
+    # Demonstrate logging with different loggers
+    app_logger.info("Application started")
+    app_logger.debug("Debug information from main app")
+    
+    auth_logger.info("User authentication attempt")
+    auth_logger.warning("Invalid login attempt detected")
+    auth_logger.error("Authentication failed - too many attempts")
+    
+    db_logger.debug("Database connection established")
+    db_logger.info("Database query executed successfully")
+    db_logger.critical("Database connection lost!")
+    
+    app_logger.info("Application shutdown")
+    
+    print("\nLog files created:")
+    print(f"- {LOG_DIR}/app_main.log")
+    print(f"- {LOG_DIR}/auth_module.log") 
+    print(f"- {LOG_DIR}/database.log")
 
 if __name__ == "__main__":
     main()
